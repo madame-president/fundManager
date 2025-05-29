@@ -1,10 +1,15 @@
 import streamlit as st
+from streamlit_autorefresh import st_autorefresh
 from tracker import fetchTxs, fetchLivePrice, fetchPrice
 import pandas as pd
+import time
 
 st.set_page_config(page_title="Bitcoin Fund Tracker", layout="wide")
-
+st_autorefresh(interval=60 * 1000, key="refresh")
 st.title("📈 Bitcoin Fund Tracker")
+
+# 🕒 Show last updated timestamp
+st.caption(f"🔄 Last updated: {time.strftime('%Y-%m-%d %H:%M:%S')}")
 
 try:
     # Load and cache raw transaction data
@@ -38,10 +43,9 @@ try:
         "pnlDollar", "pnlPercent"
     ]]
 
-    # Display dashboard
+    # Display metrics and table
     st.metric("Live BTC Price (CAD)", f"${livePrice:,.2f}")
     st.dataframe(df, use_container_width=True)
 
 except Exception as e:
     st.error(f"Failed to load data: {e}")
-
