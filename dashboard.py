@@ -6,29 +6,21 @@ import time
 
 st.set_page_config(page_title="Bitcoin Savings Experiment | Norma Escobar", layout="wide")
 st_autorefresh(interval=60 * 1000, key="refresh")
-st.title("Bitcoin Savings Tracker: what is the worth of your money if you save in ₿itcoin?")
 
-# 🕒 Show last updated timestamp
-st.caption(f"🔄 Last updated: {time.strftime('%Y-%m-%d %H:%M:%S')}")
+st.title("Bitcoin Savings Tracker: what is the worth of your money if you save in ₿itcoin?")
+st.caption(f"Last updated: {time.strftime('%Y-%m-%d %H:%M:%S')}")
 
 try:
-    # Load and cache raw transaction data
     df = fetchTxs()
-
-    # Fetch historical BTC price in CAD for each transaction
     df["priceCAD"] = df["blockTime"].apply(fetchPrice)
-
-    # Fetch current live BTC price in CAD
     livePrice = fetchLivePrice()
 
-    # Compute derived columns
     df["cadValue"] = df["btcValue"] * df["priceCAD"]
     df["cadCurrentValue"] = df["btcValue"] * livePrice
     df["pnlDollar"] = df["cadCurrentValue"] - df["cadValue"]
     df["pnlPercent"] = (df["pnlDollar"] / df["cadValue"]) * 100
     df["date"] = pd.to_datetime(df["blockTime"], unit="s").dt.strftime("%Y-%m-%d")
 
-    # Round values for clean display
     df["btcValue"] = df["btcValue"].round(8)
     df["priceCAD"] = df["priceCAD"].round(2)
     df["cadValue"] = df["cadValue"].round(2)
@@ -36,14 +28,12 @@ try:
     df["pnlDollar"] = df["pnlDollar"].round(2)
     df["pnlPercent"] = df["pnlPercent"].round(2)
 
-    # Reorder columns for readability
     df = df[[
         "txid", "date", "blockHeight", "btcValue",
         "priceCAD", "cadValue", "cadCurrentValue",
         "pnlDollar", "pnlPercent"
     ]]
 
-    # Display metrics and table
     st.metric("Live BTC Price (CAD)", f"${livePrice:,.2f}")
     totalBtc = df["btcValue"].sum()
     totalCad = df["cadValue"].sum()
@@ -55,7 +45,6 @@ try:
     daysSinceStart = (pd.Timestamp.now() - firstDate).days
     averagePrice = totalCad / totalBtc
 
-    # 🔢 Add human-readable index
     df.index = df.index + 1
     df.index.name = "#"
     st.markdown("#### 📊 Account Summary")
@@ -79,7 +68,6 @@ try:
         color = "green" if val > 0 else "red" if val < 0 else "black"
         return f"color: {color}"
 
-    # Create a display copy with renamed columns
     displayDf = df.rename(columns={
     "txid": "Transaction ID",
     "date": "Date",
@@ -102,10 +90,8 @@ try:
         "PnL (%)": "{:.2f}%",
     })
 
-    # Display with new headers
     st.dataframe(styledDf, use_container_width=True)
 
-    # Group by date and compute cumulative sums
     chartData = df.groupby("date")[["cadValue", "cadCurrentValue"]].sum().cumsum()
     chartData.columns = ["Normal Savings (CAD)", "Bitcoin Savings (CAD)"]
 

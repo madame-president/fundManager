@@ -1,7 +1,9 @@
 import requests, sqlite3, pandas as pd, time
 from pathlib import Path
+from dotenv import load_env
+import os
 
-FUND_ADDRESS = "3D3J5tQ5trfZnzDwSozgCTY73PmfuybSuj"
+FUND_ADDRESS = os.getenv("BITCOIN_ADDRESS")
 TX_API_URL = f"https://mempool.space/api/address/{FUND_ADDRESS}/txs"
 PRICE_API_URL = "https://mempool.space/api/v1/historical-price"
 TX_DB_PATH = "txs.db"
@@ -10,7 +12,7 @@ PRICE_DB_PATH = "prices.db"
 def fetchLivePrice():
     res = requests.get("https://mempool.space/api/v1/prices")
     if res.status_code != 200:
-        raise Exception(f"Live price fetch failed: {res.status_code}")
+        raise Exception(f"Request failed: {res.status_code}")
     return res.json()["CAD"]
 
 def fetchTxs():
@@ -118,7 +120,7 @@ def fetchPrice(blockTime):
     res = requests.get(f"{PRICE_API_URL}?currency=CAD&timestamp={blockTime}")
     if res.status_code != 200:
         conn.close()
-        raise Exception(f"Price fetch failed: {res.status_code}")
+        raise Exception(f"Request failed: {res.status_code}")
 
     priceCAD = res.json()["prices"][0]["CAD"]
     cursor.execute("INSERT OR IGNORE INTO prices (blockTime, priceCAD) VALUES (?, ?)", (blockTime, priceCAD))
