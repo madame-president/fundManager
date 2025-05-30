@@ -1,6 +1,6 @@
 import requests, sqlite3, pandas as pd, time
 from pathlib import Path
-from dotenv import load_env
+from dotenv import load_dotenv
 import os
 
 FUND_ADDRESS = os.getenv("BITCOIN_ADDRESS")
