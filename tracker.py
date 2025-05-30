@@ -7,7 +7,7 @@ load_dotenv()  # Make sure to load the .env variables
 
 FUND_ADDRESS = os.getenv("BITCOIN_ADDRESS")
 if not FUND_ADDRESS:
-    raise ValueError("FUND_ADDRESS is not set. Check your .env file.")
+    raise ValueError("Cannot detect address. Check .env file or upload secrets to Streamlit using TOML file.")
 
 TX_API_URL = f"https://mempool.space/api/address/{FUND_ADDRESS}/txs"
 PRICE_API_URL = "https://mempool.space/api/v1/historical-price"
