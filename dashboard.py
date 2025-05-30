@@ -3,6 +3,10 @@ from streamlit_autorefresh import st_autorefresh
 from tracker import fetchTxs, fetchLivePrice, fetchPrice
 import pandas as pd
 import time
+from dotenv import load_dotenv
+import os
+
+print("[DEBUG] FUND_ADDRESS:", os.getenv("BITCOIN_ADDRESS"))
 
 st.set_page_config(page_title="Bitcoin Savings Experiment | Norma Escobar", layout="wide")
 st_autorefresh(interval=120 * 1000, key="refresh")
@@ -10,10 +14,22 @@ st_autorefresh(interval=120 * 1000, key="refresh")
 st.title("Bitcoin Savings Tracker: what is the worth of your money if you save in ₿itcoin?")
 st.caption(f"Last updated: {time.strftime('%Y-%m-%d %H:%M:%S')}")
 
+debugLogs = []
+
+def log(msg):
+    print(msg)
+    debugLogs.append(str(msg))
+
 try:
+    log("[INFO] Starting data fetch...")
     df = fetchTxs()
-    df["priceCAD"] = df["blockTime"].apply(fetchPrice)
+    log(f"[INFO] {len(df)} transactions fetched")
+
+    log("[INFO] Fetching price for each blockTime:")
+    df["priceCAD"] = df["blockTime"].apply(lambda bt: log(f" - blockTime={bt}") or fetchPrice(bt))
+
     livePrice = fetchLivePrice()
+    log(f"[INFO] Live price fetched: {livePrice} CAD")
 
     df["cadValue"] = df["btcValue"] * df["priceCAD"]
     df["cadCurrentValue"] = df["btcValue"] * livePrice
@@ -29,7 +45,7 @@ try:
     df["pnlPercent"] = df["pnlPercent"].round(2)
 
     df = df[[
-        "date","txid", "btcValue",
+        "date", "txid", "btcValue",
         "priceCAD", "cadValue", "cadCurrentValue",
         "pnlDollar", "pnlPercent", "blockHeight"
     ]]
@@ -69,26 +85,26 @@ try:
         return f"color: {color}"
 
     displayDf = df.rename(columns={
-    "txid": "Transaction ID",
-    "date": "Date",
-    "blockHeight": "Block Height",
-    "btcValue": "BTC",
-    "priceCAD": "Price (CAD)",
-    "cadValue": "Cost Basis (CAD)",
-    "cadCurrentValue": "Current Value (CAD)",
-    "pnlDollar": "PnL ($)",
-    "pnlPercent": "PnL (%)"
+        "txid": "Transaction ID",
+        "date": "Date",
+        "blockHeight": "Block Height",
+        "btcValue": "BTC",
+        "priceCAD": "Price (CAD)",
+        "cadValue": "Cost Basis (CAD)",
+        "cadCurrentValue": "Current Value (CAD)",
+        "pnlDollar": "PnL ($)",
+        "pnlPercent": "PnL (%)"
     })
 
     styledDf = displayDf.style\
-    .map(highlight_pnl, subset=["PnL ($)", "PnL (%)"])\
-    .format({
-        "Price (CAD)": "${:,.2f}",
-        "Cost Basis (CAD)": "${:,.2f}",
-        "Current Value (CAD)": "${:,.2f}",
-        "PnL ($)": "${:,.2f}",
-        "PnL (%)": "{:.2f}%",
-    })
+        .map(highlight_pnl, subset=["PnL ($)", "PnL (%)"])\
+        .format({
+            "Price (CAD)": "${:,.2f}",
+            "Cost Basis (CAD)": "${:,.2f}",
+            "Current Value (CAD)": "${:,.2f}",
+            "PnL ($)": "${:,.2f}",
+            "PnL (%)": "{:.2f}%",
+        })
 
     st.dataframe(styledDf, use_container_width=True)
 
@@ -98,5 +114,14 @@ try:
     st.markdown("#### 📈 Account Value Over Time")
     st.line_chart(chartData)
 
+    # Display debug logs at the end
+    with st.expander("🔍 Debug Log"):
+        for line in debugLogs:
+            st.text(line)
+
 except Exception as e:
-    st.error(f"Failed to load data: {e}")
+    st.error(f"❌ Failed to load data: {e}")
+    log(f"[EXCEPTION] {e}")
+    with st.expander("🔍 Debug Log"):
+        for line in debugLogs:
+            st.text(line)
