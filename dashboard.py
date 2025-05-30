@@ -5,7 +5,7 @@ import pandas as pd
 import time
 
 st.set_page_config(page_title="Bitcoin Savings Experiment | Norma Escobar", layout="wide")
-st_autorefresh(interval=60 * 1000, key="refresh")
+st_autorefresh(interval=120 * 1000, key="refresh")
 
 st.title("Bitcoin Savings Tracker: what is the worth of your money if you save in ₿itcoin?")
 st.caption(f"Last updated: {time.strftime('%Y-%m-%d %H:%M:%S')}")

@@ -37,66 +37,45 @@ def fetchTxs():
     """)
     conn.commit()
 
-    cursor.execute("SELECT value FROM metadata WHERE key = 'lastSeenTxid'")
-    row = cursor.fetchone()
-    lastSeenTxid = row[0] if row else None
-
-    allTxs = []
     seenTxs = set(r[0] for r in cursor.execute("SELECT txid FROM transactions"))
-    nextTxid = lastSeenTxid
 
-    while True:
-        url = TX_API_URL
-        if nextTxid:
-            url += f"?after_txid={nextTxid}"
-        res = requests.get(url)
-        if res.status_code != 200:
-            print(f"Failed: {res.status_code}")
-            break
-        data = res.json()
-        if not data:
-            break
+    res = requests.get(TX_API_URL)
+    if res.status_code != 200:
+        conn.close()
+        raise Exception(f"Request failed: {res.status_code}")
 
-        newTxids = []
-        for tx in data:
-            txid = tx["txid"]
-            if txid in seenTxs:
-                continue
-            block = tx.get("status", {})
-            blockHeight = block.get("block_height")
-            blockTime = block.get("block_time")
+    data = res.json()
+    newTxs = []
 
+    for tx in data:
+        txid = tx["txid"]
+        if txid in seenTxs:
+            continue
+
+        status = tx.get("status", {})
+        blockHeight = status.get("block_height")
+        blockTime = status.get("block_time")
+
+        if blockHeight and blockTime:
             btcValue = sum(
                 vout["value"]
                 for vout in tx.get("vout", [])
                 if vout.get("scriptpubkey_address") == FUND_ADDRESS
-            ) / 1e8 
+            ) / 1e8
 
-            allTxs.append((txid, blockHeight, blockTime, btcValue))
-            newTxids.append(txid)
-            seenTxs.add(txid)
+            newTxs.append((txid, blockHeight, blockTime, btcValue))
 
-        if newTxids:
-            nextTxid = data[-1]["txid"]
-        else:
-            break
-
-        time.sleep(0.5)
-
-    if allTxs:
+    if newTxs:
         cursor.executemany("""
             INSERT OR IGNORE INTO transactions (txid, blockHeight, blockTime, btcValue)
             VALUES (?, ?, ?, ?)
-        """, allTxs)
-        cursor.execute("""
-            INSERT INTO metadata (key, value) VALUES ('lastSeenTxid', ?)
-            ON CONFLICT(key) DO UPDATE SET value = excluded.value
-        """, (nextTxid,))
+        """, newTxs)
         conn.commit()
 
-    df = pd.read_sql("SELECT * FROM transactions", conn)
+    df = pd.read_sql("SELECT * FROM transactions ORDER BY blockTime DESC", conn)
     conn.close()
     return df
+
 
 def fetchPrice(blockTime):
     Path(PRICE_DB_PATH).touch(exist_ok=True)
