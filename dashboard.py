@@ -29,9 +29,9 @@ try:
     df["pnlPercent"] = df["pnlPercent"].round(2)
 
     df = df[[
-        "txid", "date", "blockHeight", "btcValue",
+        "date","txid", "btcValue",
         "priceCAD", "cadValue", "cadCurrentValue",
-        "pnlDollar", "pnlPercent"
+        "pnlDollar", "pnlPercent", "blockHeight"
     ]]
 
     st.metric("Live BTC Price (CAD)", f"${livePrice:,.2f}")
