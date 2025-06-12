@@ -137,9 +137,9 @@ try:
     # Create simple summary table
     annual_summary_df = pd.DataFrame({
         "Metric": [
-            "Annual Return Y1",
+            "Annual Return",
             "Bitcoin Closing Price",
-            "Bitcoin Held Y1",
+            "Bitcoin Held",
         ],
         "Value": [
             f"{return_percent_year1:.2f}%",
@@ -148,8 +148,8 @@ try:
         ]
     })
 
-    st.markdown("#### 🕰️ Fund Y1 Performance")
-    st.table(annual_summary_df)
+    st.markdown("#### Year 1 Performance")
+    st.table(annual_summary_df.set_index("Metric"))
 
     # Display debug logs at the end
     with st.expander("🔍 Debug Log"):
