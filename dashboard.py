@@ -112,6 +112,7 @@ try:
             "PnL (%)": "{:.2f}%",
         })
 
+    st.markdown("#### Fund Bitcoin Purchases")
     st.dataframe(styledDf, use_container_width=True)
 
     chartData = df.groupby("date")[["cadValue", "cadCurrentValue"]].sum().cumsum()
