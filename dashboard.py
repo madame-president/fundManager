@@ -83,6 +83,8 @@ try:
     col8.metric("Days Since Inception", f"{daysSinceStart} days")
     col9.metric("Avg Purchase Price", f"${averagePrice:,.2f}")
 
+    st.metric("Live Bitcoin Price", f"${livePrice:,.2f}")
+
 
     def pnlHighlighter(val):
         color = "green" if val > 0 else "red" if val < 0 else "black"
@@ -111,7 +113,6 @@ try:
         })
 
     st.markdown("#### Bitcoin Purchases")
-    st.metric("Live Bitcoin Price", f"${livePrice:,.2f}")
     st.dataframe(styledDf, use_container_width=True)
 
     chartData = df.groupby("date")[["cadValue", "cadCurrentValue"]].sum().cumsum()
