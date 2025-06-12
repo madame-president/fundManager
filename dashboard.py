@@ -116,7 +116,7 @@ try:
     st.dataframe(styledDf, use_container_width=True)
 
     chartData = df.groupby("date")[["cadValue", "cadCurrentValue"]].sum().cumsum()
-    chartData.columns = ["Fund investments (CAD)", "Fund Value (CAD)"]
+    chartData.columns = ["Fiat Capital", "Fund Value"]
 
     st.markdown("#### Fund Value Over Time")
     st.line_chart(chartData)
