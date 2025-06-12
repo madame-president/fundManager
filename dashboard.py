@@ -112,13 +112,13 @@ try:
             "PnL (%)": "{:.2f}%",
         })
 
-    st.markdown("#### Fund Bitcoin Purchases")
+    st.markdown("#### Bitcoin Purchases")
     st.dataframe(styledDf, use_container_width=True)
 
     chartData = df.groupby("date")[["cadValue", "cadCurrentValue"]].sum().cumsum()
     chartData.columns = ["Fund investments (CAD)", "Fund Value (CAD)"]
 
-    st.markdown("#### 📈 Fund Value Over Time")
+    st.markdown("#### Fund Value Over Time")
     st.line_chart(chartData)
 
     # --- Annual Return Summary (First Year Only) ---
