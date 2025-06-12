@@ -83,6 +83,7 @@ try:
     col8.metric("Days Since Inception", f"{daysSinceStart} days")
     col9.metric("Avg Purchase Price", f"${averagePrice:,.2f}")
 
+    st. markdown("#### Other Stats")
     st.metric("Live Bitcoin Price", f"${livePrice:,.2f}")
 
 
