@@ -65,20 +65,26 @@ try:
     df.index.name = "#"
     st.markdown("#### 📊 Fund Summary")
 
+    st.markdown("#### 💰 Portfolio Overview")
     col1, col2, col3 = st.columns(3)
     col1.metric("Total BTC", f"{totalBtc:.8f}")
     col2.metric("Total Invested (CAD)", f"${totalCad:,.2f}")
     col3.metric("Current Fund Value", f"${currentValue:,.2f}")
 
+    st.markdown("#### 📈 Performance")
     col4, col5, col6 = st.columns(3)
-    col4.metric("PnL ($)", f"${totalPnlDollar:,.2f}", delta_color="normal" if totalPnlDollar >= 0 else "inverse")
-    col5.metric("PnL (%)", f"{totalPnlPercent:.2f}%", delta_color="normal" if totalPnlPercent >= 0 else "inverse")
+    pnl_dollar_emoji = "🟢" if totalPnlDollar >= 0 else "🔴"
+    pnl_percent_emoji = "📈" if totalPnlPercent >= 0 else "📉"
+    col4.metric("PnL ($)", f"{pnl_dollar_emoji} ${totalPnlDollar:,.2f}", delta_color="normal" if totalPnlDollar >= 0 else "inverse")
+    col5.metric("PnL (%)", f"{pnl_percent_emoji} {totalPnlPercent:.2f}%", delta_color="normal" if totalPnlPercent >= 0 else "inverse")
     col6.metric("Purchases", numPurchases)
 
+    st.markdown("#### 📅 Fund History")
     col7, col8, col9 = st.columns(3)
     col7.metric("Fund Start Date", firstDate.strftime("%Y-%m-%d"))
     col8.metric("Days Since Start", f"{daysSinceStart} days")
     col9.metric("Avg Purchase Price", f"${averagePrice:,.2f}")
+
 
     def highlight_pnl(val):
         color = "green" if val > 0 else "red" if val < 0 else "black"
