@@ -144,7 +144,7 @@ try:
         "Value": [
             f"{return_percent_year1:.2f}%",
             f"${btc_price_on_day_365:,.2f}",
-            f"{btc_acquired_year1:.8f} BTC",
+            f"{btc_acquired_year1:.8f}",
         ]
     })
 
