@@ -1,6 +1,6 @@
 import streamlit as st
 from streamlit_autorefresh import st_autorefresh
-from tracker import fetchTxs, fetchLivePrice, fetchPrice
+from tracker import getTxs, livePrice, getPrice
 import pandas as pd
 import time
 from dotenv import load_dotenv
@@ -22,13 +22,13 @@ def log(msg):
 
 try:
     log("[INFO] Starting data fetch...")
-    df = fetchTxs()
+    df = getTxs()
     log(f"[INFO] {len(df)} transactions fetched")
 
     log("[INFO] Fetching price for each blockTime:")
-    df["priceCAD"] = df["blockTime"].apply(lambda bt: log(f" - blockTime={bt}") or fetchPrice(bt))
+    df["priceCAD"] = df["blockTime"].apply(lambda bt: log(f" - blockTime={bt}") or getPrice(bt))
 
-    livePrice = fetchLivePrice()
+    livePrice = livePrice()
     log(f"[INFO] Live price fetched: {livePrice} CAD")
 
     df["cadValue"] = df["btcValue"] * df["priceCAD"]
