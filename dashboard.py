@@ -11,7 +11,7 @@ print("[DEBUG] FUND_ADDRESS:", os.getenv("BITCOIN_ADDRESS"))
 st.set_page_config(page_title="Bitcoin Fund | Norma Escobar", layout="wide")
 st_autorefresh(interval=120 * 1000, key="refresh")
 
-st.title("₿itcoin Accrual Fund")
+st.title("📊 ₿itcoin Accrual Fund")
 st.caption(f"Last updated: {time.strftime('%Y-%m-%d %H:%M:%S')}")
 
 debugLogs = []
@@ -65,7 +65,7 @@ try:
     df.index.name = "#"
     
 
-    st.markdown("#### 📊 Fund Overview")
+    st.markdown("#### Fund Overview")
     col1, col2, col3 = st.columns(3)
     col1.metric("Total Bitcoin Held", f"{totalBtc:.8f}")
     col2.metric("Total Fiat Cost", f"${totalCad:,.2f}")
