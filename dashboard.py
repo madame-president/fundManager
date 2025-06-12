@@ -11,7 +11,7 @@ print("[DEBUG] FUND_ADDRESS:", os.getenv("BITCOIN_ADDRESS"))
 st.set_page_config(page_title="Bitcoin Fund | Norma Escobar", layout="wide")
 st_autorefresh(interval=120 * 1000, key="refresh")
 
-st.title("📊 ₿itcoin Accrual Fund")
+st.title("📊 Bitcoin Accrual Fund")
 st.caption(f"Last updated: {time.strftime('%Y-%m-%d %H:%M:%S')}")
 
 debugLogs = []
@@ -21,15 +21,15 @@ def log(msg):
     debugLogs.append(str(msg))
 
 try:
-    log("[INFO] Starting data fetch...")
+    log("[INFO] Starting requests...")
     df = getTxs()
-    log(f"[INFO] {len(df)} transactions fetched")
+    log(f"[INFO] {len(df)} transactions received")
 
-    log("[INFO] Fetching price for each blockTime:")
+    log("[INFO] Requesting price for each blockTime:")
     df["priceCAD"] = df["blockTime"].apply(lambda bt: log(f" - blockTime={bt}") or getPrice(bt))
 
     livePrice = livePrice()
-    log(f"[INFO] Live price fetched: {livePrice} CAD")
+    log(f"[INFO] Live price: {livePrice} CAD")
 
     df["cadValue"] = df["btcValue"] * df["priceCAD"]
     df["cadCurrentValue"] = df["btcValue"] * livePrice
@@ -50,7 +50,6 @@ try:
         "pnlDollar", "pnlPercent", "blockHeight"
     ]]
 
-    st.metric("Live Bitcoin Price", f"${livePrice:,.2f}")
     totalBtc = df["btcValue"].sum()
     totalCad = df["cadValue"].sum()
     currentValue = df["cadCurrentValue"].sum()
@@ -64,7 +63,6 @@ try:
     df.index = df.index + 1
     df.index.name = "#"
     
-
     st.markdown("#### Fund Overview")
     col1, col2, col3 = st.columns(3)
     col1.metric("Total Bitcoin Held", f"{totalBtc:.8f}")
@@ -86,7 +84,7 @@ try:
     col9.metric("Avg Purchase Price", f"${averagePrice:,.2f}")
 
 
-    def highlight_pnl(val):
+    def pnlHighlighter(val):
         color = "green" if val > 0 else "red" if val < 0 else "black"
         return f"color: {color}"
 
@@ -95,15 +93,15 @@ try:
         "date": "Date",
         "blockHeight": "Block Height",
         "btcValue": "BTC",
-        "priceCAD": "Price (CAD)",
-        "cadValue": "Cost Basis (CAD)",
-        "cadCurrentValue": "Current Value (CAD)",
+        "priceCAD": "Price",
+        "cadValue": "Cost Basis",
+        "cadCurrentValue": "Current Value",
         "pnlDollar": "PnL ($)",
         "pnlPercent": "PnL (%)"
     })
 
     styledDf = displayDf.style\
-        .map(highlight_pnl, subset=["PnL ($)", "PnL (%)"])\
+        .map(pnlHighlighter, subset=["PnL ($)", "PnL (%)"])\
         .format({
             "Price (CAD)": "${:,.2f}",
             "Cost Basis (CAD)": "${:,.2f}",
@@ -113,6 +111,7 @@ try:
         })
 
     st.markdown("#### Bitcoin Purchases")
+    st.metric("Live Bitcoin Price", f"${livePrice:,.2f}")
     st.dataframe(styledDf, use_container_width=True)
 
     chartData = df.groupby("date")[["cadValue", "cadCurrentValue"]].sum().cumsum()
@@ -121,21 +120,18 @@ try:
     st.markdown("#### Fund Value Over Time")
     st.line_chart(chartData)
 
-    # --- Annual Return Summary (First Year Only) ---
+    # --- Annual Return Summary (Y1) ---
 
-    # Define key date range
-    cutoff_date = firstDate + pd.Timedelta(days=365)
-    df_year1 = df[pd.to_datetime(df["date"]) <= cutoff_date]
+    yearOneDate = firstDate + pd.Timedelta(days=365)
+    df_year1 = df[pd.to_datetime(df["date"]) <= yearOneDate]
 
-    # Calculate values
     btc_acquired_year1 = df_year1["btcValue"].sum()
     cad_invested_year1 = df_year1["cadValue"].sum()
-    btc_price_on_day_365 = 120_548  # hardcoded
-    value_after_year1 = btc_acquired_year1 * btc_price_on_day_365
+    btc_price_year1 = 120_548
+    value_after_year1 = btc_acquired_year1 * btc_price_year1
     pnl_after_year1 = value_after_year1 - cad_invested_year1
     return_percent_year1 = (pnl_after_year1 / cad_invested_year1) * 100
 
-    # Create simple summary table
     annual_summary_df = pd.DataFrame({
         "Metric": [
             "Annual Return",
@@ -144,7 +140,7 @@ try:
         ],
         "Value": [
             f"{return_percent_year1:.2f}%",
-            f"${btc_price_on_day_365:,.2f}",
+            f"${btc_price_year1:,.2f}",
             f"{btc_acquired_year1:.8f}",
         ]
     })
@@ -152,13 +148,13 @@ try:
     st.markdown("#### Year 1 Performance")
     st.table(annual_summary_df.set_index("Metric"))
 
-    # Display debug logs at the end
+    
     with st.expander("🔍 Debug Log"):
         for line in debugLogs:
             st.text(line)
 
 except Exception as e:
-    st.error(f"❌ Failed to load data: {e}")
+    st.error(f"Failed to load data: {e}")
     log(f"[EXCEPTION] {e}")
     with st.expander("🔍 Debug Log"):
         for line in debugLogs:
