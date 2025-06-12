@@ -65,13 +65,13 @@ try:
     df.index.name = "#"
     
 
-    st.markdown("#### 📊 Fund Overview")
+    st.markdown("### 📊 Fund Overview")
     col1, col2, col3 = st.columns(3)
     col1.metric("Total BTC", f"{totalBtc:.8f}")
     col2.metric("Total Invested (CAD)", f"${totalCad:,.2f}")
     col3.metric("Current Fund Value", f"${currentValue:,.2f}")
 
-    st.markdown("#### 📈 Cumulative Performance")
+    st.markdown("#### Cumulative Performance")
     col4, col5, col6 = st.columns(3)
     pnl_dollar_emoji = "🟢" if totalPnlDollar >= 0 else "🔴"
     pnl_percent_emoji = "🟢" if totalPnlPercent >= 0 else "🔴"
@@ -79,7 +79,7 @@ try:
     col5.metric("PnL (%)", f"{pnl_percent_emoji} {totalPnlPercent:.2f}%", delta_color="normal" if totalPnlPercent >= 0 else "inverse")
     col6.metric("# of Purchases", numPurchases)
 
-    st.markdown("#### 📅 Fund History")
+    st.markdown("#### Fund History")
     col7, col8, col9 = st.columns(3)
     col7.metric("Fund Inception", firstDate.strftime("%Y-%m-%d"))
     col8.metric("Days Since Inception", f"{daysSinceStart} days")
