@@ -8,10 +8,10 @@ import os
 
 print("[DEBUG] FUND_ADDRESS:", os.getenv("BITCOIN_ADDRESS"))
 
-st.set_page_config(page_title="Bitcoin Savings Experiment | Norma Escobar", layout="wide")
+st.set_page_config(page_title="Bitcoin Fund | Norma Escobar", layout="wide")
 st_autorefresh(interval=120 * 1000, key="refresh")
 
-st.title("Bitcoin Savings Tracker: what is the worth of your money if you save in ₿itcoin?")
+st.title("₿itcoin Accrual Fund")
 st.caption(f"Last updated: {time.strftime('%Y-%m-%d %H:%M:%S')}")
 
 debugLogs = []
@@ -63,12 +63,12 @@ try:
 
     df.index = df.index + 1
     df.index.name = "#"
-    st.markdown("#### 📊 Account Summary")
+    st.markdown("#### 📊 Fund Summary")
 
     col1, col2, col3 = st.columns(3)
     col1.metric("Total BTC", f"{totalBtc:.8f}")
     col2.metric("Total Invested (CAD)", f"${totalCad:,.2f}")
-    col3.metric("Current Account Value", f"${currentValue:,.2f}")
+    col3.metric("Current Fund Value", f"${currentValue:,.2f}")
 
     col4, col5, col6 = st.columns(3)
     col4.metric("PnL ($)", f"${totalPnlDollar:,.2f}", delta_color="normal" if totalPnlDollar >= 0 else "inverse")
@@ -76,7 +76,7 @@ try:
     col6.metric("Purchases", numPurchases)
 
     col7, col8, col9 = st.columns(3)
-    col7.metric("Account Start Date", firstDate.strftime("%Y-%m-%d"))
+    col7.metric("Fund Start Date", firstDate.strftime("%Y-%m-%d"))
     col8.metric("Days Since Start", f"{daysSinceStart} days")
     col9.metric("Avg Purchase Price", f"${averagePrice:,.2f}")
 
@@ -109,9 +109,9 @@ try:
     st.dataframe(styledDf, use_container_width=True)
 
     chartData = df.groupby("date")[["cadValue", "cadCurrentValue"]].sum().cumsum()
-    chartData.columns = ["Normal Savings (CAD)", "Bitcoin Savings (CAD)"]
+    chartData.columns = ["Fund investments (CAD)", "Fund Value (CAD)"]
 
-    st.markdown("#### 📈 Account Value Over Time")
+    st.markdown("#### 📈 Fund Value Over Time")
     st.line_chart(chartData)
 
     # Display debug logs at the end
