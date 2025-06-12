@@ -120,6 +120,37 @@ try:
     st.markdown("#### 📈 Fund Value Over Time")
     st.line_chart(chartData)
 
+    # --- Annual Return Summary (First Year Only) ---
+
+    # Define key date range
+    cutoff_date = firstDate + pd.Timedelta(days=365)
+    df_year1 = df[pd.to_datetime(df["date"]) <= cutoff_date]
+
+    # Calculate values
+    btc_acquired_year1 = df_year1["btcValue"].sum()
+    cad_invested_year1 = df_year1["cadValue"].sum()
+    btc_price_on_day_365 = 120_548  # hardcoded
+    value_after_year1 = btc_acquired_year1 * btc_price_on_day_365
+    pnl_after_year1 = value_after_year1 - cad_invested_year1
+    return_percent_year1 = (pnl_after_year1 / cad_invested_year1) * 100
+
+    # Create simple summary table
+    annual_summary_df = pd.DataFrame({
+        "Metric": [
+            "Annual Return Y1",
+            "Bitcoin Closing Price",
+            "Bitcoin Held Y1",
+        ],
+        "Value": [
+            f"{return_percent_year1:.2f}%",
+            f"${btc_price_on_day_365:,.2f}",
+            f"{btc_acquired_year1:.8f} BTC",
+        ]
+    })
+
+    st.markdown("#### 🕰️ Fund Y1 Performance")
+    st.table(annual_summary_df)
+
     # Display debug logs at the end
     with st.expander("🔍 Debug Log"):
         for line in debugLogs:
