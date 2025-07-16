@@ -8,11 +8,20 @@ import os
 
 print("[DEBUG] FUND_ADDRESS:", os.getenv("BITCOIN_ADDRESS"))
 
-st.set_page_config(page_title="Bitcoin Fund | Norma Escobar", layout="wide")
-st_autorefresh(interval=120 * 1000, key="refresh")
+st.set_page_config(page_title="Sister Bitcoin Fund", layout="wide")
+st_autorefresh(interval=180 * 1000, key="refresh")
 
-st.title("📊 Bitcoin Accrual Fund")
+st.title("Sister Bitcoin Fund")
 st.caption(f"Last updated: {time.strftime('%Y-%m-%d %H:%M:%S')}")
+
+with st.container():
+        st.markdown("**Fund Address:**")
+        st.code("3D3J5tQ5trfZnzDwSozgCTY73PmfuybSuj", language="text")
+
+        st.markdown("**About:**")
+        st.markdown("""
+        Norma Escobar and Maria Escobar manage a unique high-conviction, non-diversified, bitcoin Fund.
+        """)
 
 debugLogs = []
 
@@ -63,12 +72,14 @@ try:
     df.index = df.index + 1
     df.index.name = "#"
     
+    st.markdown("---")
     st.markdown("#### Fund Overview")
     col1, col2, col3 = st.columns(3)
     col1.metric("Total Bitcoin Held", f"{totalBtc:.8f}")
     col2.metric("Total Fiat Cost", f"${totalCad:,.2f}")
     col3.metric("Current Fund Value", f"${currentValue:,.2f}")
 
+    st.markdown("---")
     st.markdown("#### Cumulative Performance")
     col4, col5, col6 = st.columns(3)
     pnl_dollar_emoji = "🟢" if totalPnlDollar >= 0 else "🔴"
@@ -77,12 +88,14 @@ try:
     col5.metric("PnL (%)", f"{pnl_percent_emoji} {totalPnlPercent:.2f}%", delta_color="normal" if totalPnlPercent >= 0 else "inverse")
     col6.metric("Total Transactions", numPurchases)
 
+    st.markdown("---")
     st.markdown("#### Fund History")
     col7, col8, col9 = st.columns(3)
     col7.metric("Fund Inception", firstDate.strftime("%Y-%m-%d"))
     col8.metric("Days Since Inception", f"{daysSinceStart} days")
     col9.metric("Avg Purchase Price", f"${averagePrice:,.2f}")
 
+    st.markdown("---")
     st. markdown("#### Other Stats")
     st.metric("Live Bitcoin Price", f"${livePrice:,.2f}")
 
@@ -113,26 +126,28 @@ try:
             "PnL (%)": "{:.2f}%",
         })
 
+    st.markdown("---")
     st.markdown("#### Bitcoin Purchases")
     st.dataframe(styledDf, use_container_width=True)
 
     chartData = df.groupby("date")[["cadValue", "cadCurrentValue"]].sum().cumsum()
     chartData.columns = ["Fiat Capital", "Fund Value"]
 
+    st.markdown("---")
     st.markdown("#### Fund Value Over Time")
     st.line_chart(chartData)
 
     # --- Annual Return Summary (Y1) ---
 
     yearOneDate = firstDate + pd.Timedelta(days=365)
-    df_year1 = df[pd.to_datetime(df["date"]) <= yearOneDate]
+    year1 = df[pd.to_datetime(df["date"]) <= yearOneDate]
 
-    btc_acquired_year1 = df_year1["btcValue"].sum()
-    cad_invested_year1 = df_year1["cadValue"].sum()
-    btc_price_year1 = 120_548
-    value_after_year1 = btc_acquired_year1 * btc_price_year1
-    pnl_after_year1 = value_after_year1 - cad_invested_year1
-    return_percent_year1 = (pnl_after_year1 / cad_invested_year1) * 100
+    year1BtcAcquired = year1["btcValue"].sum()
+    year1CadInvested = year1["cadValue"].sum()
+    year1Closing = 120_548
+    year1BtcValue = year1BtcAcquired * year1Closing
+    year1Pnl = year1BtcValue - year1CadInvested
+    year1ReturnPercent = (year1Pnl / year1CadInvested) * 100
 
     annual_summary_df = pd.DataFrame({
         "Metric": [
@@ -141,17 +156,19 @@ try:
             "Bitcoin Held",
         ],
         "Value": [
-            f"{return_percent_year1:.2f}%",
-            f"${btc_price_year1:,.2f}",
-            f"{btc_acquired_year1:.8f}",
+            f"{year1ReturnPercent:.2f}%",
+            f"${year1Closing:,.2f}",
+            f"{year1BtcAcquired:.8f}",
         ]
     })
 
+    st.markdown("---")
     st.markdown("#### Year 1 Performance")
     st.table(annual_summary_df.set_index("Metric"))
 
-    
-    with st.expander("🔍 Debug Log"):
+    st.markdown("---")
+ 
+    with st.expander("Debug Log"):
         for line in debugLogs:
             st.text(line)
 

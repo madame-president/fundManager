@@ -1,4 +1,4 @@
-import requests, sqlite3, pandas as pd, time
+import requests, sqlite3, pandas as pd
 from pathlib import Path
 from dotenv import load_dotenv
 import os
