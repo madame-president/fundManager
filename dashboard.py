@@ -6,13 +6,28 @@ import time
 from dotenv import load_dotenv
 import os
 
+df = getTxs()
+livePrice = livePrice()
+
+
 print("[DEBUG] FUND_ADDRESS:", os.getenv("BITCOIN_ADDRESS"))
 
 st.set_page_config(page_title="Sister Bitcoin Fund", layout="wide")
-st_autorefresh(interval=180 * 1000, key="refresh")
+st_autorefresh(interval=1200 * 1000, key="refresh")
 
-st.title("Sister Bitcoin Fund")
-st.caption(f"Last updated: {time.strftime('%Y-%m-%d %H:%M:%S')}")
+col1, col2 = st.columns([3, 1])
+
+with col1:
+    st.markdown(
+        "<h1 style='text-align: left; color: #111;'>Sister Bitcoin Fund</h1>"
+        "<h4 style='text-align: left; color: gray;'>Passively managed. Autonomously powered.</h4>",
+        unsafe_allow_html=True
+    )
+
+with col2:
+    st.caption(f"Last updated: {time.strftime('%Y-%m-%d %H:%M:%S')}")
+
+st.markdown("---")
 
 with st.container():
         st.markdown("**Fund Address:**")
@@ -31,13 +46,12 @@ def log(msg):
 
 try:
     log("[INFO] Starting requests...")
-    df = getTxs()
+
     log(f"[INFO] {len(df)} transactions received")
 
     log("[INFO] Requesting price for each blockTime:")
     df["priceCAD"] = df["blockTime"].apply(lambda bt: log(f" - blockTime={bt}") or getPrice(bt))
 
-    livePrice = livePrice()
     log(f"[INFO] Live price: {livePrice} CAD")
 
     df["cadValue"] = df["btcValue"] * df["priceCAD"]
@@ -130,11 +144,11 @@ try:
     st.markdown("#### Bitcoin Purchases")
     st.dataframe(styledDf, use_container_width=True)
 
+    st.markdown("---")
     chartData = df.groupby("date")[["cadValue", "cadCurrentValue"]].sum().cumsum()
     chartData.columns = ["Fiat Capital", "Fund Value"]
-
-    st.markdown("---")
     st.markdown("#### Fund Value Over Time")
+    st.markdown("Tracking cumulative capital invested vs current fund valuation in CAD.")
     st.line_chart(chartData)
 
     # --- Annual Return Summary (Y1) ---
