@@ -12,15 +12,20 @@ livePrice = livePrice()
 
 print("[DEBUG] FUND_ADDRESS:", os.getenv("BITCOIN_ADDRESS"))
 
-st.set_page_config(page_title="Sister Bitcoin Fund", layout="wide")
+st.set_page_config(page_title="Bitcoin Address Analyzer", layout="wide")
 st_autorefresh(interval=1200 * 1000, key="refresh")
 
 col1, col2 = st.columns([3, 1])
 
 with col1:
     st.markdown(
-        "<h1 style='text-align: left; color: #111;'>Sister Bitcoin Fund</h1>"
-        "<h4 style='text-align: left; color: gray;'>Passively managed. Autonomously powered.</h4>",
+        """
+        <h1 style='text-align: left; color: #111;'>This is an autonomous Bitcoin address analyzer.</h1>
+        <h4 style='text-align: left; color: gray;'> 
+            I built this using Python, Streamlit and SQLite. It is updated every 20 minutes using 
+            <a href='https://mempool.space/docs/api/rest' target='_blank' style='color: gray; text-decoration: underline;'>mempool.space</a>.
+        </h4>
+        """,
         unsafe_allow_html=True
     )
 
@@ -30,12 +35,15 @@ with col2:
 st.markdown("---")
 
 with st.container():
-        st.markdown("**Fund Address:**")
+        st.markdown("**Address being analyzed:**")
         st.code("3D3J5tQ5trfZnzDwSozgCTY73PmfuybSuj", language="text")
 
-        st.markdown("**About:**")
+        st.markdown("**About this tool:**")
         st.markdown("""
-        Norma Escobar and Maria Escobar manage a unique high-conviction, non-diversified, bitcoin Fund.
+        This analyzer autonomously tracks a Bitcoin address using real-time data.
+                    
+        **I created this tool to act like a self-updating Bitcoin dashboard. But without managers, associates or additional costs related to labour.
+        Just the data, automated every 20 minutes.**
         """)
 
 debugLogs = []
@@ -87,14 +95,14 @@ try:
     df.index.name = "#"
     
     st.markdown("---")
-    st.markdown("#### Fund Overview")
+    st.markdown("#### Statistics related to address overview")
     col1, col2, col3 = st.columns(3)
     col1.metric("Total Bitcoin Held", f"{totalBtc:.8f}")
     col2.metric("Total Fiat Cost", f"${totalCad:,.2f}")
-    col3.metric("Current Fund Value", f"${currentValue:,.2f}")
+    col3.metric("Current Bitcoin Value", f"${currentValue:,.2f}")
 
     st.markdown("---")
-    st.markdown("#### Cumulative Performance")
+    st.markdown("#### Statistics related to cumulative performance")
     col4, col5, col6 = st.columns(3)
     pnl_dollar_emoji = "🟢" if totalPnlDollar >= 0 else "🔴"
     pnl_percent_emoji = "🟢" if totalPnlPercent >= 0 else "🔴"
@@ -103,14 +111,14 @@ try:
     col6.metric("Total Transactions", numPurchases)
 
     st.markdown("---")
-    st.markdown("#### Fund History")
+    st.markdown("#### Statistics related to address history")
     col7, col8, col9 = st.columns(3)
-    col7.metric("Fund Inception", firstDate.strftime("%Y-%m-%d"))
-    col8.metric("Days Since Inception", f"{daysSinceStart} days")
+    col7.metric("Address First Seen", firstDate.strftime("%Y-%m-%d"))
+    col8.metric("Days Since First Seen", f"{daysSinceStart} days")
     col9.metric("Avg Purchase Price", f"${averagePrice:,.2f}")
 
     st.markdown("---")
-    st. markdown("#### Other Stats")
+    st. markdown("#### Statistic related to bitcoin price")
     st.metric("Live Bitcoin Price", f"${livePrice:,.2f}")
 
 
@@ -141,15 +149,22 @@ try:
         })
 
     st.markdown("---")
-    st.markdown("#### Bitcoin Purchases")
+    st.markdown("#### Self-updating table with historical transactions")
     st.dataframe(styledDf, use_container_width=True)
 
     st.markdown("---")
-    chartData = df.groupby("date")[["cadValue", "cadCurrentValue"]].sum().cumsum()
-    chartData.columns = ["Fiat Capital", "Fund Value"]
-    st.markdown("#### Fund Value Over Time")
-    st.markdown("Tracking cumulative capital invested vs current fund valuation in CAD.")
-    st.line_chart(chartData)
+    st.markdown("#### Automatically performs annual return analysis")
+    st.markdown("""
+        This tool automatically calculates **annual return** for each 365-day period since the first transaction at the address.
+        
+        For each rolling year:
+        - Tracks the amount of bitcoin acquired
+        - Computes the CAD closing price
+        - Calculates the CAD value of bitcoin exactly 1 year later
+        - Displays the annual return percentage
+                    
+        This gives you an objective view of how each year performed, regardless of timing or volatility.
+        """)
 
     # --- Annual Return Summary (Y1) ---
 
@@ -179,6 +194,25 @@ try:
     st.markdown("---")
     st.markdown("#### Year 1 Performance")
     st.table(annual_summary_df.set_index("Metric"))
+
+    st.markdown("---")
+    with st.container():
+        st.markdown(
+        """
+        <h4 style='margin-bottom: 0.2rem;'>If you want this tool for your Bitcoin address:</h4>
+        <div style='display: flex; align-items: center; gap: 1.5rem; margin-top: 2rem;'>
+            <img src='https://payhip.com/cdn-cgi/image/format=auto,width=500/https://pe56d.s3.amazonaws.com/o_1ipdbv9jbqh91dhcs86184vqqoc.jpeg' style='width: 100px; border-radius: 50%; border: 2px solid #ccc;' alt='Norma Escobar'>
+            <div>
+                <p style='margin: 0; color: gray; font-size: 0.95rem;'>
+                    Visit <a href='https://normaescobar.com' target='_blank' style='color: #0A84FF;'>normaescobar.com</a><br>
+                    <strong>To get in touch with me or to check out my previous work.</strong>
+                </p>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
 
     st.markdown("---")
  
